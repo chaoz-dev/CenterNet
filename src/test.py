@@ -26,7 +26,7 @@ class PrefetchDataset(torch.utils.data.Dataset):
     self.img_dir = dataset.img_dir
     self.pre_process_func = pre_process_func
     self.opt = opt
-  
+
   def __getitem__(self, index):
     img_id = self.images[index]
     img_info = self.load_image_func(ids=[img_id])[0]
@@ -52,13 +52,13 @@ def prefetch_test(opt):
   print(opt)
   Logger(opt)
   Detector = detector_factory[opt.task]
-  
+
   split = 'val' if not opt.trainval else 'test'
   dataset = Dataset(opt, split)
   detector = Detector(opt)
-  
+
   data_loader = torch.utils.data.DataLoader(
-    PrefetchDataset(opt, dataset, detector.pre_process), 
+    PrefetchDataset(opt, dataset, detector.pre_process),
     batch_size=1, shuffle=False, num_workers=1, pin_memory=True)
 
   results = {}
@@ -87,7 +87,7 @@ def test(opt):
   print(opt)
   Logger(opt)
   Detector = detector_factory[opt.task]
-  
+
   split = 'val' if not opt.trainval else 'test'
   dataset = Dataset(opt, split)
   detector = Detector(opt)
@@ -98,16 +98,17 @@ def test(opt):
   time_stats = ['tot', 'load', 'pre', 'net', 'dec', 'post', 'merge']
   avg_time_stats = {t: AverageMeter() for t in time_stats}
   for ind in range(num_iters):
-    img_id = dataset.images[ind]
-    img_info = dataset.coco.loadImgs(ids=[img_id])[0]
-    img_path = os.path.join(dataset.img_dir, img_info['file_name'])
+    #  img_id = dataset.images[ind]
+    #  img_info = dataset.coco.loadImgs(ids=[img_id])[0]
+    #  img_path = os.path.join(dataset.img_dir, img_info['file_name'])
+    img_path = dataset.images[ind]
 
-    if opt.task == 'ddd':
-      ret = detector.run(img_path, img_info['calib'])
-    else:
-      ret = detector.run(img_path)
-    
-    results[img_id] = ret['results']
+    #  if opt.task == 'ddd':
+      #  ret = detector.run(img_path, img_info['calib'])
+    #  else:
+    ret = detector.run(img_path)
+
+    #  results[img_id] = ret['results']
 
     Bar.suffix = '[{0}/{1}]|Tot: {total:} |ETA: {eta:} '.format(
                    ind, num_iters, total=bar.elapsed_td, eta=bar.eta_td)
@@ -116,7 +117,7 @@ def test(opt):
       Bar.suffix = Bar.suffix + '|{} {:.3f} '.format(t, avg_time_stats[t].avg)
     bar.next()
   bar.finish()
-  dataset.run_eval(results, opt.save_dir)
+  #  dataset.run_eval(results, opt.save_dir)
 
 if __name__ == '__main__':
   opt = opts().parse()
